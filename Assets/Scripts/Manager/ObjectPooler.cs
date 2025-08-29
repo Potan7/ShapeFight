@@ -22,8 +22,36 @@ public interface IPoolable
 
 public class ObjectPooler : MonoSingleton<ObjectPooler>
 {
+    [Header("Pooling Settings")]
+    public int defaultCapacity = 10; // 풀의 기본 크기
+    public int maxCapacity = 20;     // 풀의 최대 크기
+
     // 각 프리팹에 대한 오브젝트 풀을 저장하는 딕셔너리
-    private Dictionary<GameObject, IObjectPool<GameObject>> poolDictionary = new Dictionary<GameObject, IObjectPool<GameObject>>();
+    private readonly Dictionary<GameObject, IObjectPool<GameObject>> poolDictionary = new Dictionary<GameObject, IObjectPool<GameObject>>();
+
+    /// <summary>
+    /// 게임 시작 시점에 특정 프리팹의 풀을 미리 생성하고 채워둡니다.
+    /// </summary>
+    public void PrewarmPool(GameObject prefab, int initialAmount)
+    {
+        // 풀이 이미 존재하면 아무것도 하지 않음
+        if (poolDictionary.ContainsKey(prefab))
+            return;
+
+        // 풀을 생성하고, 생성된 오브젝트를 임시 리스트에 저장
+        var pool = GetPoolFor(prefab);
+        var prewarmedObjects = new GameObject[initialAmount];
+        for (int i = 0; i < initialAmount; i++)
+        {
+            prewarmedObjects[i] = pool.Get();
+        }
+
+        // 리스트에 있는 모든 오브젝트를 다시 풀로 반환하여 비활성화 상태로 만듦
+        foreach (var obj in prewarmedObjects)
+        {
+            pool.Release(obj);
+        }
+    }
 
     /// <summary>
     /// 지정된 프리팹으로 풀에서 오브젝트를 가져옵니다.
@@ -32,14 +60,7 @@ public class ObjectPooler : MonoSingleton<ObjectPooler>
     /// <returns>풀에서 나온 활성화된 게임 오브젝트</returns>
     public GameObject Get(GameObject prefab)
     {
-        // 해당 프리팹에 대한 풀이 없으면 새로 생성
-        if (!poolDictionary.ContainsKey(prefab))
-        {
-            CreatePoolFor(prefab);
-        }
-
-        // 풀에서 오브젝트를 가져와 반환
-        return poolDictionary[prefab].Get();
+        return GetPoolFor(prefab).Get();
     }
 
     /// <summary>
@@ -69,11 +90,15 @@ public class ObjectPooler : MonoSingleton<ObjectPooler>
     }
 
     /// <summary>
-    /// 특정 프리팹에 대한 새로운 오브젝트 풀을 생성합니다.
+    /// 특정 프리팹에 대한 풀을 가져오거나, 없으면 새로 생성합니다.
     /// </summary>
-    /// <param name="prefab">풀을 생성할 프리팹</param>
-    private void CreatePoolFor(GameObject prefab)
+    private IObjectPool<GameObject> GetPoolFor(GameObject prefab)
     {
+        if (poolDictionary.TryGetValue(prefab, out var pool))
+        {
+            return pool;
+        }
+
         var newPool = new ObjectPool<GameObject>(
             createFunc: () =>
             {
@@ -99,9 +124,11 @@ public class ObjectPooler : MonoSingleton<ObjectPooler>
             },
             actionOnDestroy: (obj) => Destroy(obj),
             collectionCheck: true, // 중복 반환 체크
-            maxSize: 20 // 풀의 최대 크기
+            defaultCapacity: defaultCapacity,
+            maxSize: maxCapacity
         );
 
         poolDictionary.Add(prefab, newPool);
+        return newPool;
     }
 }

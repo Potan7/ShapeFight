@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour, IPoolable
 {
-    public float speed = 20f;
-    public float lifeTime = 2f;
+    public float damage = 10f;
     public Rigidbody2D rb;
 
     // 이 총알의 원본 프리팹. 총을 발사할 때 설정해줍니다.
@@ -14,10 +13,11 @@ public class Bullet : MonoBehaviour, IPoolable
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Fire(Vector2 dir, Vector3 pos, float speed, float lifeTime)
+    public void Fire(Vector2 dir, Vector3 pos, float speed, float damage)
     {
         rb.position = pos;
         rb.linearVelocity = dir.normalized * speed;
+        this.damage = damage;
     }
 
     // IPoolable 인터페이스 구현
