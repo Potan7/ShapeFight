@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : NetworkBehaviour
+public class PlayerController : NetworkBehaviour, IHealthComponent
 {
     [Header("References")]
     public InputActionAsset inputActionAsset;
@@ -16,10 +16,14 @@ public class PlayerController : NetworkBehaviour
     public float moveSpeed = 5f;
     public float maxSpeed = 10f;
 
-    public float currentHealth = 100f;
-    public float maxHealth = 100f;
+    protected float currentHealth = 100f;
+    protected float maxHealth = 100f;
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
 
-    public int currentAmmo = 30;
+    public bool IsAlive => currentHealth > 0;
+
+    protected int currentAmmo = 30;
 
     Rigidbody2D rb;
     Vector2 moveDirection;
@@ -144,5 +148,17 @@ public class PlayerController : NetworkBehaviour
         
         currentAmmo = gun.maxAmmo; // 탄약을 최대치로 회복
         mapCanvas.UpdateAmmo(currentAmmo, gun.maxAmmo);
+    }
+
+    public void TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+        if (currentHealth < 0) currentHealth = 0;
+    }
+
+    public void Heal(float amount)
+    {
+        currentHealth += amount;
+        if (currentHealth > maxHealth) currentHealth = maxHealth;
     }
 }
