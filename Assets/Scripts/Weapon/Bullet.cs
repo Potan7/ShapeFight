@@ -30,6 +30,12 @@ public class Bullet : NetworkBehaviour
         {
             // Despawn을 호출하면 모든 클라이언트에서 OnNetworkDespawn이 트리거됩니다.
             NetworkObject.Despawn(false); // 즉시 파괴하지 않음
+
+            // 충돌한 객체가 IHitable 인터페이스를 구현하는지 확인
+            if (collision.gameObject.TryGetComponent(out IHitable hitable))
+            {
+                hitable.Hit(this);
+            }
         }
     }
 

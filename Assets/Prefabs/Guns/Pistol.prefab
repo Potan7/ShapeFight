@@ -361,7 +361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2557061484
+  GlobalObjectIdHash: 1408715018
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -390,12 +390,11 @@ MonoBehaviour:
   firePoint: {fileID: 4276918325966611378}
   bulletPrefab: {fileID: 4047487699129399239, guid: 8b1532731bdea5c4483a478dfd68a755, type: 3}
   fireRate: 5
-  recoilStrength: 5
+  recoilStrength: 3
   bulletSpeed: 20
   bulletDamage: 10
   maxAmmo: 30
   reloadTime: 2
-  initialPoolSize: 10
 --- !u!114 &7014817198936164762
 MonoBehaviour:
   m_ObjectHideFlags: 0
